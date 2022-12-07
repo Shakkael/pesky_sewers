@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://Scenes/Levels/RoomLevel0.tscn" type="PackedScene" id=1]
+[ext_resource path="res://Scripts/Levels/SceneSwitcher.gd" type="Script" id=2]
+[ext_resource path="res://Scenes/Entities/Player.tscn" type="PackedScene" id=3]
+
+[node name="SceneSwitcher" type="Spatial"]
+script = ExtResource( 2 )
+
+[node name="Cooldown" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="Player" parent="." groups=[
+"player",
+] instance=ExtResource( 3 )]
+transform = Transform( -1.62921e-07, 0, -1, 0, 1, 0, 1, 0, -1.62921e-07, 0, 3, 0 )
+collision/safe_margin = 0.01
+SPEED = 6
+
+[node name="RoomLevel1" parent="." instance=ExtResource( 1 )]
+[connection signal="blackedOff" from="Player" to="." method="_on_Player_blackedOff"]
+[connection signal="blackedOut" from="Player" to="." method="_on_Player_blackedOut"]
+[connection signal="doorFound" from="Player" to="." method="_on_Player_doorFound"]

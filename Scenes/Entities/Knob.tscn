@@ -1,0 +1,90 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Models/Props/Outside/metal.jpg" type="Texture" id=2]
+
+[sub_resource type="SphereMesh" id=1]
+radius = 0.2
+height = 0.4
+radial_segments = 8
+rings = 8
+
+[sub_resource type="Shader" id=4]
+code = "shader_type spatial; 
+render_mode skip_vertex_transform, diffuse_burley; 
+
+//Albedo texture 
+uniform sampler2D albedoTex : hint_albedo; //Geometric resolution for vert sna[ 
+uniform float snapRes = 8.0; 
+uniform float roughness = 1.0;
+uniform float specular = 0.1;
+uniform vec2 uv_scale = vec2(1.0, 1.0);
+uniform vec2 uv_offset = vec2(.0, .0);
+//Controls the how much light it recieves
+uniform float light_intensity = 0.3;
+
+// For transparent textures
+uniform bool transparent = false;
+
+// cull mode disabled
+
+//vec4 for UV recalculation 
+varying vec4 vertCoord; 
+void vertex() { 
+	UV = UV * uv_scale + uv_offset;
+	VERTEX = (MODELVIEW_MATRIX * vec4(VERTEX, 1.0)).xyz; 
+	VERTEX.xyz = floor(VERTEX.xyz * snapRes) / snapRes; 
+	vertCoord = vec4(UV * VERTEX.x, VERTEX.z, 0); 
+} 
+void fragment() { 
+	
+	ROUGHNESS =roughness;
+	SPECULAR = specular;
+	vec3 coloring = vec3(sin(3.0*TIME)/4.5+0.1,sin(3.0*TIME)/4.5+0.1,sin(3.0*TIME)/4.5+0.1);
+	ALBEDO = texture(albedoTex, UV).rgb + coloring; 
+	
+	
+	//Check if the texture is transparent
+	if (transparent == true){
+		// alpha value less than user-specified threshold 0.0?
+		if (texture(albedoTex, UV).a <= 0.0)
+        
+    	{
+        	discard; // yes: discard this fragment
+    	}	
+		
+	}
+	
+	
+	}
+//QUICK FIX TO LIGHTING
+void light()
+{
+	
+	DIFFUSE_LIGHT = ALBEDO*LIGHT_COLOR*ATTENUATION*light_intensity;
+
+}"
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = SubResource( 4 )
+shader_param/snapRes = 8.0
+shader_param/roughness = 1.0
+shader_param/specular = 0.1
+shader_param/uv_scale = Vector2( 1, 1 )
+shader_param/uv_offset = Vector2( 0, 0 )
+shader_param/light_intensity = 0.3
+shader_param/transparent = false
+shader_param/albedoTex = ExtResource( 2 )
+
+[sub_resource type="SphereShape" id=2]
+radius = 0.4
+
+[node name="StaticBody" type="StaticBody"]
+collision_layer = 3
+collision_mask = 3
+
+[node name="CSGMesh" type="CSGMesh" parent="."]
+mesh = SubResource( 1 )
+material = SubResource( 3 )
+
+[node name="CollisionShape" type="CollisionShape" parent="."]
+shape = SubResource( 2 )
